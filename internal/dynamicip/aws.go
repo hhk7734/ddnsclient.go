@@ -7,7 +7,7 @@ import (
 	"regexp"
 )
 
-var _ IPer = new(AWSIPer)
+var _ IPer = (*AWSIPer)(nil)
 
 type AWSIPer struct{}
 
@@ -28,7 +28,7 @@ func (a AWSIPer) IP() (net.IP, error) {
 		return nil, err
 	}
 
-	r, _ := regexp.Compile(`\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}`)
+	r := regexp.MustCompile(`\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}`)
 	ip := r.Find(data)
 
 	return net.ParseIP(string(ip)), nil

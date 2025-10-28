@@ -1,6 +1,9 @@
 package logger
 
 import (
+	"errors"
+	"syscall"
+
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
@@ -20,6 +23,7 @@ func LogPFlags() *pflag.FlagSet {
 	f := pflag.NewFlagSet("log", pflag.ContinueOnError)
 	f.String(LOG_LEVEL_KEY, "info", "log level")
 	f.String(LOG_FORMAT_KEY, "json", "log format")
+
 	return f
 }
 
@@ -31,7 +35,8 @@ func LogConfigFromViper() LogConfig {
 }
 
 func SetGlobalZapLogger(cfg LogConfig) {
-	var l *zap.Logger
+	var logger *zap.Logger
+
 	var zapCfg zap.Config
 
 	if cfg.Format != "json" {
@@ -46,9 +51,15 @@ func SetGlobalZapLogger(cfg LogConfig) {
 		panic(err)
 	}
 
-	l, _ = zapCfg.Build()
-	defer l.Sync()
-	zap.ReplaceGlobals(l)
+	logger, _ = zapCfg.Build()
+
+	defer func() {
+		if err := logger.Sync(); err != nil && !errors.Is(err, syscall.EINVAL) {
+			panic(err)
+		}
+	}()
+
+	zap.ReplaceGlobals(logger)
 
 	zap.L().Info("logger config", zap.Dict("config",
 		zap.String(LOG_LEVEL_KEY, cfg.Level),

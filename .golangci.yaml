@@ -1,0 +1,15 @@
+version: "2"
+
+linters:
+  default: all
+  disable:
+    - depguard
+    - noinlineerr
+  settings:
+    revive:
+      rules:
+        - name: package-comments
+          disabled: true
+  exclusions:
+    paths:
+      - ".*/zz_.*.go"

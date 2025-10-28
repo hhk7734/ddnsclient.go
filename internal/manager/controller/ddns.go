@@ -12,9 +12,10 @@ import (
 	networkingv1alpha1 "github.com/hhk7734/ddnsclient.go/pkg/apis/networking.loliot.net/v1alpha1"
 )
 
-// DDNSReconciler reconciles a DDNS object
+// DDNSReconciler reconciles a DDNS object.
 type DDNSReconciler struct {
 	client.Client
+
 	Scheme *runtime.Scheme
 	IPer   dynamicip.IPer
 }
