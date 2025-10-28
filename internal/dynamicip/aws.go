@@ -1,6 +1,7 @@
 package dynamicip
 
 import (
+	"errors"
 	"io"
 	"net"
 	"net/http"
@@ -28,8 +29,10 @@ func (a AWSIPer) IP() (net.IP, error) {
 		return nil, err
 	}
 
-	r := regexp.MustCompile(`\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}`)
-	ip := r.Find(data)
+	ip := regexp.MustCompile(`\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}`).Find(data)
+	if ip == nil {
+		return nil, errors.New("no IP address found in response")
+	}
 
 	return net.ParseIP(string(ip)), nil
 }

@@ -5,6 +5,7 @@ linters:
   disable:
     - depguard
     - noinlineerr
+    - wsl
   settings:
     revive:
       rules:
