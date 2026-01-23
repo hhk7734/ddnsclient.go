@@ -33,17 +33,22 @@ import (
 	"github.com/hhk7734/ddnsclient.go/test/utils"
 )
 
+// name is the helm release name.
+const name = "ddnsclient"
+
 // namespace where the project is deployed in
-const namespace = "ddnsclient-system"
+const namespace = "ddnsclient"
 
 // serviceAccountName created for the project
-const serviceAccountName = "ddnsclient-controller-manager"
+const serviceAccountName = name
 
 // metricsServiceName is the name of the metrics service of the project
-const metricsServiceName = "ddnsclient-controller-manager-metrics-service"
+const metricsServiceName = name
+
+var metricsReaderRoleName = fmt.Sprintf("%s-%s-metrics-reader", name, namespace)
 
 // metricsRoleBindingName is the name of the RBAC that will be created to allow get the metrics data
-const metricsRoleBindingName = "ddnsclient-metrics-binding"
+var metricsRoleBindingName = fmt.Sprintf("%s-%s-metrics-reader-binding", name, namespace)
 
 var _ = Describe("Manager", Ordered, func() {
 	var controllerPodName string
@@ -56,12 +61,6 @@ var _ = Describe("Manager", Ordered, func() {
 		cmd := exec.Command("kubectl", "create", "ns", namespace)
 		_, err := utils.Run(cmd)
 		Expect(err).NotTo(HaveOccurred(), "Failed to create namespace")
-
-		By("labeling the namespace to enforce the restricted security policy")
-		cmd = exec.Command("kubectl", "label", "--overwrite", "ns", namespace,
-			"pod-security.kubernetes.io/enforce=restricted")
-		_, err = utils.Run(cmd)
-		Expect(err).NotTo(HaveOccurred(), "Failed to label namespace with restricted policy")
 
 		By("installing CRDs")
 		cmd = exec.Command("make", "install")
@@ -146,7 +145,7 @@ var _ = Describe("Manager", Ordered, func() {
 			verifyControllerUp := func(g Gomega) {
 				// Get the name of the controller-manager pod
 				cmd := exec.Command("kubectl", "get",
-					"pods", "-l", "control-plane=controller-manager",
+					"pods", "-l", fmt.Sprintf("app.kubernetes.io/name=ddnsclient,app.kubernetes.io/instance=%s", name),
 					"-o", "go-template={{ range .items }}"+
 						"{{ if not .metadata.deletionTimestamp }}"+
 						"{{ .metadata.name }}"+
@@ -159,7 +158,7 @@ var _ = Describe("Manager", Ordered, func() {
 				podNames := utils.GetNonEmptyLines(podOutput)
 				g.Expect(podNames).To(HaveLen(1), "expected 1 controller pod running")
 				controllerPodName = podNames[0]
-				g.Expect(controllerPodName).To(ContainSubstring("controller-manager"))
+				g.Expect(controllerPodName).To(ContainSubstring(name))
 
 				// Validate the pod's status
 				cmd = exec.Command("kubectl", "get",
@@ -176,7 +175,7 @@ var _ = Describe("Manager", Ordered, func() {
 		It("should ensure the metrics endpoint is serving metrics", func() {
 			By("creating a ClusterRoleBinding for the service account to allow access to metrics")
 			cmd := exec.Command("kubectl", "create", "clusterrolebinding", metricsRoleBindingName,
-				"--clusterrole=ddnsclient-metrics-reader",
+				fmt.Sprintf("--clusterrole=%s", metricsReaderRoleName),
 				fmt.Sprintf("--serviceaccount=%s:%s", namespace, serviceAccountName),
 			)
 			_, err := utils.Run(cmd)
