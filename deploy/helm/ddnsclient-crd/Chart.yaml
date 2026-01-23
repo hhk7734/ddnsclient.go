@@ -1,0 +1,9 @@
+apiVersion: v2
+name: ddnsclient-crd
+description: Dynamic DNS update client
+type: application
+version: 0.0.0
+appVersion: "0.0.0"
+home: https://github.com/hhk7734/ddnsclient.go
+sources:
+  - https://github.com/hhk7734/ddnsclient.go/tree/main/deploy/helm/ddnsclient-crd

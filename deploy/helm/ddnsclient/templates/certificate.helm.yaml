@@ -1,0 +1,33 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "common.names.fullname" . }}-webhook
+  namespace: {{ include "common.names.namespace" . }}
+  labels:
+    {{- include "ddnsclient.labels" . | nindent 4 }}
+spec:
+  issuerRef:
+    kind: Issuer
+    name: {{ include "common.names.fullname" . }}
+  secretName: {{ include "common.names.fullname" . }}-webhook-tls
+  dnsNames:
+    - {{ include "common.names.fullname" . }}.{{ include "common.names.namespace" . }}.svc
+    - {{ include "common.names.fullname" . }}.{{ include "common.names.namespace" . }}.svc.cluster.local
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "common.names.fullname" . }}-metrics
+  namespace: {{ include "common.names.namespace" . }}
+  labels:
+    {{- include "ddnsclient.labels" . | nindent 4 }}
+spec:
+  issuerRef:
+    kind: Issuer
+    name: {{ include "common.names.fullname" . }}
+  secretName: {{ include "common.names.fullname" . }}-metrics-tls
+  dnsNames:
+    - {{ include "common.names.fullname" . }}.{{ include "common.names.namespace" . }}.svc
+    - {{ include "common.names.fullname" . }}.{{ include "common.names.namespace" . }}.svc.cluster.local

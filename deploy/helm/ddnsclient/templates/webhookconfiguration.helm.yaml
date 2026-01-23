@@ -1,0 +1,37 @@
+{{- $manifestList := .Files.Get "files/webhook/manifests.yaml" | split "---" }}
+{{- range $manifestStr := $manifestList }}
+{{- $manifest := $manifestStr | fromYaml }}
+{{- if $manifest.kind }}
+---
+apiVersion: {{ $manifest.apiVersion }}
+kind: {{ $manifest.kind }}
+metadata:
+  name: {{ include "common.names.fullname.namespace" $ }}-webhook
+  labels:
+    {{- include "ddnsclient.labels" $ | nindent 4 }}
+  annotations:
+    cert-manager.io/inject-ca-from: "{{ include "common.names.namespace" $ }}/{{ include "common.names.fullname" $ }}-webhook"
+webhooks:
+  {{- range $webhook := $manifest.webhooks }}
+  - clientConfig:
+      service:
+        name: {{ include "common.names.fullname" $ }}
+        namespace: {{ include "common.names.namespace" $ }}
+        path: {{ $webhook.clientConfig.service.path }}
+    {{- toYaml (omit $webhook "clientConfig") | nindent 4 }}
+    {{- if $.Values.devNamespaces }}
+    namespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values:
+            {{- if not $.Values.disableSystemNamespace }}
+            - {{ include "common.names.namespace" $ | quote }}
+            {{- end }}
+            {{- range $.Values.devNamespaces }}
+            - {{ . | quote }}
+            {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}

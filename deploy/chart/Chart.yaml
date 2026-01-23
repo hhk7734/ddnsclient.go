@@ -1,9 +1,0 @@
-apiVersion: v2
-name: ddnsclient
-description: Dynamic DNS update client
-type: application
-home: https://github.com/hhk7734/ddnsclient.go
-sources:
-  - https://github.com/hhk7734/ddnsclient.go
-version: "0.0.0"
-appVersion: "0.0.0"

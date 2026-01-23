@@ -1,0 +1,10 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "common.names.fullname" . }}
+  namespace: {{ include "common.names.namespace" . }}
+  labels:
+    {{- include "ddnsclient.labels" . | nindent 4 }}
+spec:
+  selfSigned: {}

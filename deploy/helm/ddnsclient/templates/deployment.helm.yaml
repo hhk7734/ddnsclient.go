@@ -1,0 +1,103 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.names.fullname" . }}
+  namespace: {{ include "common.names.namespace" . }}
+  labels:
+    {{- include "ddnsclient.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicas }}
+  strategy:
+    {{- toYaml .Values.updateStrategy | nindent 4 }}
+  selector:
+    matchLabels:
+      {{- include "ddnsclient.matchLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "common.tplvalues.merge" (dict "values" (list .Values.podLabels (include "ddnsclient.labels" .)) "context" $) | nindent 8 }}
+      annotations:
+        kubectl.kubernetes.io/default-container: main
+        {{- if .Values.podAnnotations }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.podAnnotations "context" $) | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "ddnsclient.serviceAccountName" . }}
+      {{- include "common.images.pullSecrets" (dict "images" (list .Values.image) "global" .Values.global) | nindent 6 }}
+      containers:
+        - name: main
+          image: {{ tpl (include "common.images.image" (dict "imageRoot" .Values.image "global" .Values.global "chart" .Chart)) . }}
+          imagePullPolicy: {{ tpl .Values.image.pullPolicy . }}
+          {{- if .Values.command }}
+          command:
+            {{- include "common.tplvalues.render" (dict "value" .Values.command "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.args }}
+          args:
+            {{- include "common.tplvalues.render" (dict "value" .Values.args "context" $) | nindent 12 }}
+          {{- else }}
+          args:
+            - --leader-elect
+            - --health-probe-bind-address=:8081
+            - --webhook-cert-path=/tmp/k8s-webhook-server/serving-certs
+            - --metrics-bind-address=:8443
+            - --metrics-cert-path=/tmp/k8s-metrics-server/metrics-certs
+            {{- if .Values.extraArgs }}
+            {{- include "common.tplvalues.render" (dict "value" .Values.extraArgs "context" $) | nindent 12 }}
+            {{- end }}
+          {{- end }}
+          ports:
+            - name: health
+              containerPort: 8081
+            - name: metrics
+              containerPort: 8443
+            - name: webhook
+              containerPort: 9443
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - "ALL"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: webhook-cert
+              mountPath: /tmp/k8s-webhook-server/serving-certs
+              readOnly: true
+            - name: metrics-cert
+              mountPath: /tmp/k8s-metrics-server/metrics-certs
+              readOnly: true
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+        {{- include "common.tplvalues.render" (dict "value" .Values.nodeSelector "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.affinity }}
+      affinity:
+        {{- toYaml .Values.affinity | nindent 8 }}
+      {{- end }}
+      terminationGracePeriodSeconds: 30
+      {{- if .Values.tolerations }}
+      tolerations:
+        {{- toYaml .Values.tolerations | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: webhook-cert
+          secret:
+            secretName: {{ include "common.names.fullname" . }}-webhook-tls
+        - name: metrics-cert
+          secret:
+            secretName: {{ include "common.names.fullname" . }}-metrics-tls

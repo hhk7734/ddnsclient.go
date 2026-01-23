@@ -1,20 +1,6 @@
 [tools]
 go = "1.24.9"
-"go:sigs.k8s.io/controller-tools/cmd/controller-gen" = "v0.19.0"
 golangci-lint = "2.5.0"
-
-[tasks.manifests]
-description = "Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects."
-run = """
-controller-gen paths=./... \
-    crd output:crd:artifacts:config=deploy/chart/files/crds \
-    rbac:roleName=manager output:rbac:artifacts:config=deploy/chart/files/rbac
-"""
-
-[tasks.generate]
-description = "Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations."
-run = "controller-gen object paths=./..."
-
-[tasks.golangci-lint]
-description = "Run GolangCI-Lint"
-run = "golangci-lint run"
+helm-docs = "1.14.2"
+kind = "0.30.0"
+kubebuilder = "4.10.1"

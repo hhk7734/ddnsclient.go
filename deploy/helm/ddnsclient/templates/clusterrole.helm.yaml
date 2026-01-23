@@ -1,0 +1,45 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "common.names.fullname.namespace" . }}
+  labels:
+    {{- include "ddnsclient.labels" . | nindent 4 }}
+rules:
+  {{- $roleYaml := .Files.Get "files/rbac/role.yaml" | fromYaml -}}
+  {{- $rules := $roleYaml.rules -}}
+  {{- toYaml $rules | nindent 2 }}
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "common.names.fullname.namespace" . }}-metrics-auth
+  labels:
+    {{- include "ddnsclient.labels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - authentication.k8s.io
+    resources:
+      - tokenreviews
+    verbs:
+      - create
+  - apiGroups:
+      - authorization.k8s.io
+    resources:
+      - subjectaccessreviews
+    verbs:
+      - create
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "common.names.fullname.namespace" . }}-metrics-reader
+  labels:
+    {{- include "ddnsclient.labels" . | nindent 4 }}
+rules:
+  - nonResourceURLs:
+      - /metrics
+    verbs:
+      - get

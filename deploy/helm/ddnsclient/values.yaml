@@ -1,0 +1,72 @@
+# -- Chart name override.
+nameOverride: ""
+
+# -- Full name override.
+fullnameOverride: ""
+
+# -- Namespace override.
+namespaceOverride: ""
+
+# -- Labels applied to all resources.
+commonLabels: {}
+
+# -- global values are shared across all sub-charts if the value's key matches.
+global:
+  # -- Image pull secrets.
+  imagePullSecrets: []
+
+# -- Number of replicas.
+replicas: 1
+
+image:
+  # -- Image repository.
+  repository: ""
+  # -- Image tag (defaults to chart appVersion if not set).
+  tag: ""
+  # -- Image pull policy.
+  pullPolicy: IfNotPresent
+  # -- Image pull secrets.
+  pullSecrets: []
+
+updateStrategy:
+  # -- Update strategy for deployment.
+  type: RollingUpdate
+
+# -- Labels applied to all pods.
+podLabels: {}
+
+# -- Annotations applied to all pods.
+podAnnotations: {}
+
+# -- Command applied to the main container. If not set, the container's default command is used.
+command: []
+
+# -- Arguments to override the main container's default arguments.
+args: []
+
+# -- Extra arguments added to the main container's default arguments. If `args` is set, this value is ignored.
+extraArgs:
+  - --zap-encoder=json
+  - --zap-log-level=info
+
+# -- Resource requests and limits for the main container.
+resources: {}
+
+# -- Node selector for pods scheduling.
+nodeSelector: {}
+
+# -- Affinity rules for pods scheduling.
+affinity: {}
+
+# -- Tolerations for pods scheduling.
+tolerations: []
+
+serviceAccount:
+  # -- Whether to create a ServiceAccount.
+  create: true
+  # -- Whether to automatically mount API credentials.
+  automount: true
+  # -- Annotations added to the ServiceAccount.
+  annotations: {}
+  # -- Name of the ServiceAccount (auto-generated if empty and create is true).
+  name: ""

@@ -1,0 +1,13 @@
+apiVersion: v2
+name: ddnsclient
+description: Dynamic DNS update client
+type: application
+version: 0.0.0
+appVersion: "0.0.0"
+home: https://github.com/hhk7734/ddnsclient.go
+sources:
+  - https://github.com/hhk7734/ddnsclient.go/tree/main/deploy/helm/ddnsclient
+dependencies:
+  - name: common
+    version: 2.31.4
+    repository: oci://registry-1.docker.io/bitnamicharts

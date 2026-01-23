@@ -1,9 +1,0 @@
-nameOverride: ""
-fullnameOverride: ""
-
-serviceAccount:
-  create: true
-  name: ""
-
-crds:
-  install: true
