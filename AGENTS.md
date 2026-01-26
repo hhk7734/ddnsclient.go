@@ -7,8 +7,11 @@
 - Test only public functions (black-box test)
 - Name a unit test file `xxx_test.go` for `xxx.go`
 - Use `package xxx_test` for `package xxx`
+- Save CRDs for unit test to `test/crds`
 
 ### E2E test
+
+- Handle methods to install/uninstall dependencies in `test/utils`
 
 ## Commit convention
 
